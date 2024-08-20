@@ -21,6 +21,9 @@
             margin: 0;
             padding: 0;
             font-family: 'SF Pro Display', sans-serif;
+            height: fit-content;
+            min-height: 100vh;
+            width: 100%;
         }
 
         html {
@@ -28,17 +31,18 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
+        }
+
+        body {
+            padding: 24px;
+            /* width: fit-content; */
         }
 
         .top-container {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -59,6 +63,47 @@
             color: white;
             opacity: 0.9;
             font-family: 'SF Pro Display Bold';
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat( auto-fit, minmax(150px, 1fr) );
+            gap: 24px;
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            background-color: rgb(38 38 38 / 45%);
+            border-radius: 24px;
+            padding: 24px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            min-width: 150px;
+            min-height: 150px;
+        }
+
+        .grid-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        p {
+            margin: 0;
+        }
+        
+        .update {
+            /* fill the whole row */
+            /* grid-column: 1 / -1; */
+            grid-column: span 3;
         }
     </style>
     <script>
@@ -84,6 +129,43 @@
             updateClock();
             updateDate();
         }
+
     </script>
+    <div class="top-container">
+        <div id="date"></div>
+        <div id="clock"></div>
+    </div>
+    <div class="grid">
+        <div class="grid-item update">
+            <div class="grid-item-content">
+                <h1>Latest Update</h1>
+                <p>Update 1</p>
+            </div>
+        </div>    
+        <div class="grid-item">
+            <div class="grid-item-content">
+                <h1>Weather</h1>
+                <p>Currently: 20°C</p>
+                <p>High: 25°C</p>
+                <p>Low: 15°C</p>
+            </div>
+        </div>
+        <div class="grid-item">
+            <div class="grid-item-content">
+                <h1>Calendar</h1>
+                <p>Meeting at 10:00</p>
+                <p>Lunch at 12:00</p>
+                <p>Appointment at 14:00</p>
+            </div>
+        </div>
+        <div class="grid-item">
+            <div class="grid-item-content">
+                <h1>Tasks</h1>
+                <p>Buy milk</p>
+                <p>Walk the dog</p>
+                <p>Finish project</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
