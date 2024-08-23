@@ -10,24 +10,34 @@
         @font-face {
             font-family: 'SF Pro Display Bold';
             font-weight: bolder;
-            src: url('/clock.otf');
+            src: url('clock.otf');
         }
         @font-face {
             font-family: 'SF Pro Display';
             font-weight: normal;
-            src: url('/default.otf');
+            src: url('display.otf');
+        }
+        @font-face {
+            font-family: 'SF Pro Text';
+            font-weight: normal;
+            src: url('default.otf');
+        }
+        @font-face {
+            font-family: 'SF Pro Text Light';
+            font-weight: lighter;
+            src: url('light.otf');
         }
         html, body {
             margin: 0;
             padding: 0;
-            font-family: 'SF Pro Display', sans-serif;
+            font-family: 'SF Pro Text', sans-serif;
             height: fit-content;
             min-height: 100vh;
             width: 100%;
         }
 
         html {
-            background-image: url('/background.png');
+            background-image: url('background.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -35,11 +45,17 @@
             justify-content: center;
             align-items: center;
             width: 100%;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
         }
 
         body {
             padding: 24px;
-            /* width: fit-content; */
+            height: 100%;
+            overflow: scroll;
         }
 
         .top-container {
@@ -56,6 +72,7 @@
             opacity: 0.9;
             white-space: nowrap;
             margin-bottom: -8px;
+            font-family: 'SF Pro Display';
         }
 
         #clock {
@@ -66,23 +83,25 @@
         }
 
         .grid {
-            display: grid;
-            grid-template-columns: repeat( auto-fit, minmax(150px, 1fr) );
+            display: flex;
             gap: 24px;
             padding: 24px;
             max-width: 1200px;
             margin: 0 auto;
+            flex-wrap: wrap;
         }
 
         .grid-item {
-            background-color: rgb(38 38 38 / 45%);
+            background-color: rgb(13 13 13 / 56%);
+            /* background-color: rgb(44 44 44 / 100%); */
             border-radius: 24px;
             padding: 24px;
-            backdrop-filter: blur(6px);
+            backdrop-filter: blur(16px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             color: white;
             min-width: 150px;
             min-height: 150px;
+            font-family: 'SF Pro Display';
         }
 
         .grid-item-content {
@@ -92,7 +111,7 @@
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 2em;
             margin: 0;
         }
 
@@ -101,9 +120,33 @@
         }
         
         .update {
-            /* fill the whole row */
-            /* grid-column: 1 / -1; */
-            grid-column: span 3;
+            width: 100%;
+        }
+
+        .notification {
+            font-family: 'SF Pro Text';
+            /* text-rendering: geometricPrecision; */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgb(40, 40, 40, 0.57);
+            color: white;
+            backdrop-filter: blur(16px);
+            border: 1px solid rgb(70, 70, 70, 0.61);
+            padding: 8px;
+            border-radius: 24px;
+            top: -500px;
+            transition: top 0.5s;
+            margin-top: 24px;
+            min-width: 400px;
+            text-align: center;
+            min-height: 70px;
+            z-index: 100;
+            font-size: 15px;
+        }
+        .show {
+            top: 0;
+            transition: top 0.5s !important;
         }
     </style>
     <script>
@@ -130,7 +173,56 @@
             updateDate();
         }
 
+        var touchstartX = 0;
+        var touchstartY = 0;
+        var touchendX = 0;
+        var touchendY = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const notification = document.getElementById('notif-div');
+
+            notification.addEventListener('touchstart', function (event) {
+                touchstartX = event.changedTouches[0].screenX;
+                touchstartY = event.changedTouches[0].screenY;
+            }, false);
+
+            notification.addEventListener('touchend', function (event) {
+                touchendX = event.changedTouches[0].screenX;
+                touchendY = event.changedTouches[0].screenY;
+                handleGesture();
+            }, false);
+        });
+
+        function handleGesture() {
+            if (touchendX < touchstartX) {
+                console.log('Swiped Left');
+            }
+
+            if (touchendX > touchstartX) {
+                console.log('Swiped Right');
+            }
+
+            if (touchendY < touchstartY) {
+                console.log('Swiped Up');
+            }
+
+            if (touchendY > touchstartY) {
+                console.log('Swiped Down');
+            }
+
+            if (touchendY === touchstartY) {
+                console.log('Tap');
+            }
+        }
+
     </script>
+    <button onclick="document.getElementById('notif-div').classList.add('show')">SHOW</button>
+    <div class="notification" id="notif-div">
+        <p style="font-size: 18px;">Notification</p>
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae, aspernatur reiciendis eligendi hic iusto, optio perspiciatis itaque aperiam, cupiditate voluptates ab harum beatae unde? A exercitationem at eligendi natus unde.
+        </p>
+    </div>
     <div class="top-container">
         <div id="date"></div>
         <div id="clock"></div>
