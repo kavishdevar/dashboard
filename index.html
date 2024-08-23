@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Dashboard</title>
 </head>
+
 <body>
     <style>
         @font-face {
@@ -12,22 +14,27 @@
             font-weight: bolder;
             src: url('clock.otf');
         }
+
         @font-face {
             font-family: 'SF Pro Display';
             font-weight: normal;
             src: url('display.otf');
         }
+
         @font-face {
             font-family: 'SF Pro Text';
             font-weight: normal;
             src: url('default.otf');
         }
+
         @font-face {
             font-family: 'SF Pro Text Light';
             font-weight: lighter;
             src: url('light.otf');
         }
-        html, body {
+
+        html,
+        body {
             margin: 0;
             padding: 0;
             font-family: 'SF Pro Text', sans-serif;
@@ -45,6 +52,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
+            height: 100%;
             overflow: hidden;
         }
 
@@ -65,7 +73,7 @@
             align-items: center;
             padding: 24px;
         }
-        
+
         #date {
             font-size: 2em;
             color: white;
@@ -118,17 +126,18 @@
         p {
             margin: 0;
         }
-        
+
         .update {
             width: 100%;
         }
 
         .notification {
             font-family: 'SF Pro Text';
-            /* text-rendering: geometricPrecision; */
+            text-rendering: geometricPrecision;
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            /* left: 50%; */
+            /* transform: translateX(-50%); */
+            right: 24px;
             background-color: rgb(40, 40, 40, 0.57);
             color: white;
             backdrop-filter: blur(16px);
@@ -139,14 +148,40 @@
             transition: top 0.5s;
             margin-top: 24px;
             min-width: 400px;
-            text-align: center;
             min-height: 70px;
             z-index: 100;
             font-size: 15px;
+            max-width: 50%;
+            padding: 16px;
+            .title {
+                font-size: 18px;
+                font-weight: bold;
+            }
         }
+
         .show {
             top: 0;
             transition: top 0.5s !important;
+        }
+
+        #temperature {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        #weather-icon {
+            margin-top: 10px;
+            margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px 'SF Pro'
+        }
+
+        #weather-description {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        #high-low {
+            font-size: 14px;
+            margin-top: 10px;
         }
     </style>
     <script>
@@ -167,7 +202,7 @@
             document.getElementById('date').innerText = date;
         }
         setInterval(updateDate, 1000 * 60 * 60);
-        
+
         onload = () => {
             updateClock();
             updateDate();
@@ -214,13 +249,304 @@
                 console.log('Tap');
             }
         }
+        // Lat, Long for open-meteo 28.4117888,76.9111255
+        async function fetchWeather() {
+            const latitude = 28.4117888;
+            const longitude = 76.9111255;
+            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Kolkata`;
+
+            try {
+                const response = await fetch(weatherUrl);
+                const data = await response.json();
+
+                // Extract weather data
+                const temp = Math.round(data.current_weather.temperature);
+                const description = data.current_weather.weathercode;
+                const maxTemp = Math.round(data.daily.temperature_2m_max[0]);
+                const minTemp = Math.round(data.daily.temperature_2m_min[0]);
+
+                console.log('Weather data:', temp, description, maxTemp, minTemp);
+                // Update the DOM
+                document.getElementById('temperature').innerText = `${temp}°`;
+                document.getElementById('weather-description').innerText = mapWeatherCode(description);
+                document.getElementById('high-low').innerText = `H:${maxTemp}° L:${minTemp}°`;
+
+                // Assuming you have a function to get the correct icon based on the weather code
+                document.getElementById('weather-icon').innerHTML = getWeatherIcon(description);
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+            }
+        }
+
+        // A placeholder function to map weather codes to descriptions
+
+        // 0	Clear
+        // 1	Mostly Clear
+        // 2	Partly Cloudy
+        // 3	Cloudy
+        // 45	Fog
+        // 48	Freezing Fog
+        // 51	Light Drizzle
+        // 53	Drizzle
+        // 55	Heavy Drizzle
+        // 56	Light Freezing Drizzle
+        // 57	Freezing Drizzle
+        // 61	Light Rain
+        // 63	Rain
+        // 65	Heavy Rain
+        // 66	Light Freezing Rain
+        // 67	Freezing Rain
+        // 71	Light Snow
+        // 73	Snow
+        // 75	Heavy Snow
+        // 77	Snow Grains
+        // 80	Light Rain Shower
+        // 81	Rain Shower
+        // 82	Heavy Rain Shower
+        // 85	Snow Shower
+        // 86	Heavy Snow Shower
+        // 95	Thunderstorm
+        // 96	Hailstorm
+        // 99	Heavy Hailstorm
+
+        function mapWeatherCode(code) {
+            const weatherCodes = {
+                0: "Clear",
+                1: "Mostly Clear",
+                2: "Partly Cloudy",
+                3: "Cloudy",
+                45: "Fog",
+                48: "Freezing Fog",
+                51: "Light Drizzle",
+                53: "Drizzle",
+                55: "Heavy Drizzle",
+                56: "Light Freezing Drizzle",
+                57: "Freezing Drizzle",
+                61: "Light Rain",
+                63: "Rain",
+                65: "Heavy Rain",
+                66: "Light Freezing Rain",
+                67: "Freezing Rain",
+                71: "Light Snow",
+                73: "Snow",
+                75: "Heavy Snow",
+                77: "Snow Grains",
+                80: "Light Rain Shower",
+                81: "Rain Shower",
+                82: "Heavy Rain Shower",
+                85: "Snow Shower",
+                86: "Heavy Snow Shower",
+                95: "Thunderstorm",
+                96: "Hailstorm",
+                99: "Heavy Hailstorm",
+            };
+            return weatherCodes[code] || "Unknown weather";
+        }
+
+        // A placeholder function to get weather icons (you'd need to implement this)
+        function getWeatherIcon(code) {
+            const SFicons = {
+                "sun.min": "􀆫",
+                "sun.min.fill": "􀆬",
+                "sun.max": "􀆭",
+                "sun.max.fill": "􀆮",
+                "sun.max.circle": "􀷎",
+                "sun.max.circle.fill": "􀷏",
+                "sun.max.trianglebadge.exclamationmark": "􁜎",
+                "sun.max.trianglebadge.exclamationmark.fill": "􁜏",
+                "sunrise": "􀆱",
+                "sunrise.fill": "􀆲",
+                "sunrise.circle": "􁛁",
+                "sunrise.circle.fill": "􁛂",
+                "sunset": "􀆳",
+                "sunset.fill": "􀆴",
+                "sunset.circle": "􁛃",
+                "sunset.circle.fill": "􁛄",
+                "sun.horizon": "􀻞",
+                "sun.horizon.fill": "􀻟",
+                "sun.horizon.circle": "􁛅",
+                "sun.horizon.circle.fill": "􁛆",
+                "sun.dust": "􀆵",
+                "sun.dust.fill": "􀆶",
+                "sun.dust.circle": "􁛇",
+                "sun.dust.circle.fill": "􁛈",
+                "sun.haze": "􀆷",
+                "sun.haze.fill": "􀆸",
+                "sun.haze.circle": "􁛉",
+                "sun.haze.circle.fill": "􁛊",
+                "sun.rain": "􁷌",
+                "sun.rain.fill": "􁷍",
+                "sun.rain.circle": "􁷎",
+                "sun.rain.circle.fill": "􁷏",
+                "sun.snow": "􁷐",
+                "sun.snow.fill": "􁷑",
+                "sun.snow.circle": "􁷒",
+                "sun.snow.circle.fill": "􁷓",
+                "moon": "􀆹",
+                "moon.fill": "􀆺",
+                "moon.circle": "􀆻",
+                "moon.circle.fill": "􀆼",
+                "moon.dust": "􁶽",
+                "moon.dust.fill": "􁶾",
+                "moon.dust.circle": "􁶿",
+                "moon.dust.circle.fill": "􁷀",
+                "moon.haze": "􁑯",
+                "moon.haze.fill": "􁑰",
+                "moon.haze.circle": "􁜷",
+                "moon.haze.circle.fill": "􁜸",
+                "sparkles": "􀆿",
+                "moon.stars": "􀇀",
+                "moon.stars.fill": "􀇁",
+                "moon.stars.circle": "􁛋",
+                "moon.stars.circle.fill": "􁛌",
+                "cloud": "􀇂",
+                "cloud.fill": "􀇃",
+                "cloud.circle": "􁛍",
+                "cloud.circle.fill": "􁛎",
+                "cloud.drizzle": "􀇄",
+                "cloud.drizzle.fill": "􀇅",
+                "cloud.drizzle.circle": "􁛏",
+                "cloud.drizzle.circle.fill": "􁛐",
+                "cloud.rain": "􀇆",
+                "cloud.rain.fill": "􀇇",
+                "cloud.rain.circle": "􁛑",
+                "cloud.rain.circle.fill": "􁛒",
+                "cloud.heavyrain": "􀇈",
+                "cloud.heavyrain.fill": "􀇉",
+                "cloud.heavyrain.circle": "􁛓",
+                "cloud.heavyrain.circle.fill": "􁛔",
+                "cloud.fog": "􀇌",
+                "cloud.fog.fill": "􀇍",
+                "cloud.fog.circle": "􁛗",
+                "cloud.fog.circle.fill": "􁛘",
+                "cloud.hail": "􀇎",
+                "cloud.hail.fill": "􀇏",
+                "cloud.hail.circle": "􁛙",
+                "cloud.hail.circle.fill": "􁛚",
+                "cloud.snow": "􀇐",
+                "cloud.snow.fill": "􀇑",
+                "cloud.snow.circle": "􁛛",
+                "cloud.snow.circle.fill": "􁛜",
+                "cloud.sleet": "􀇒",
+                "cloud.sleet.fill": "􀇓",
+                "cloud.sleet.circle": "􁛝",
+                "cloud.sleet.circle.fill": "􁛞",
+                "cloud.bolt": "􀇞",
+                "cloud.bolt.fill": "􀇟",
+                "cloud.bolt.circle": "􁛟",
+                "cloud.bolt.circle.fill": "􁛠",
+                "cloud.bolt.rain": "􀇔",
+                "cloud.bolt.rain.fill": "􀇕",
+                "cloud.bolt.rain.circle": "􁛡",
+                "cloud.bolt.rain.circle.fill": "􁛢",
+                "cloud.sun": "􀇖",
+                "cloud.sun.fill": "􀇗",
+                "cloud.sun.circle": "􁛣",
+                "cloud.sun.circle.fill": "􁛤",
+                "cloud.sun.rain": "􀇘",
+                "cloud.sun.rain.fill": "􀇙",
+                "cloud.sun.rain.circle": "􁛥",
+                "cloud.sun.rain.circle.fill": "􁛦",
+                "cloud.sun.bolt": "􀇚",
+                "cloud.sun.bolt.fill": "􀇛",
+                "cloud.sun.bolt.circle": "􁛧",
+                "cloud.sun.bolt.circle.fill": "􁛨",
+                "cloud.moon": "􀇜",
+                "cloud.moon.fill": "􀇝",
+                "cloud.moon.circle": "􁛩",
+                "cloud.moon.circle.fill": "􁛪",
+                "cloud.moon.rain": "􀇠",
+                "cloud.moon.rain.fill": "􀇡",
+                "cloud.moon.rain.circle": "􁛫",
+                "cloud.moon.rain.circle.fill": "􁛬",
+                "cloud.moon.bolt": "􀇢",
+                "cloud.moon.bolt.fill": "􀇣",
+                "cloud.moon.bolt.circle": "􁛭",
+                "cloud.moon.bolt.circle.fill": "􁛮",
+                "smoke": "􀇤",
+                "smoke.fill": "􁛯",
+                "smoke.circle": "􁛰",
+                "smoke.circle.fill": "􀇦",
+                "wind": "􁛱",
+                "wind.circle": "􁛲",
+                "wind.circle.fill": "􀇥",
+                "wind.snow": "􁇌",
+                "wind.snow.circle": "􁇍",
+                "wind.snow.circle.fill": "􁠂",
+                "snowflake": "􀇧",
+                "snowflake.circle": "􁛳",
+                "snowflake.circle.fill": "􁛴",
+                "snowflake.slash": "􀇨",
+                "tornado": "􁛵",
+                "tornado.circle": "􁛶",
+                "tornado.circle.fill": "􀇩",
+                "tropicalstorm": "􁛷",
+                "tropicalstorm.circle": "􁛸",
+                "tropicalstorm.circle.fill": "􀇪",
+                "hurricane": "􀦜",
+                "hurricane.circle": "􁛹",
+                "hurricane.circle.fill": "􁛺",
+                "thermometer.sun": "􀇫",
+                "thermometer.sun.fill": "􁛻",
+                "thermometer.sun.circle": "􁛼",
+                "thermometer.sun.circle.fill": "􂬮",
+                "thermometer.snowflake": "􁷉",
+                "thermometer.snowflake.circle": "􁷊",
+                "thermometer.snowflake.circle.fill": "􁷋",
+                "thermometer.variable": "􁏃",
+                "thermometer.variable.and.figure": "􀇬",
+                "thermometer.variable.and.figure.circle": "􁏄",
+                "thermometer.variable.and.figure.circle.fill": "􁗄",
+                "thermometer.low": "􂧣",
+                "thermometer.medium": "􂧤",
+                "thermometer.high": "􀴾",
+                "thermometer.medium.slash": "􀴿",
+                "degreesign.farenheit": "􀵀",
+                "degreesign.celsius": "􁃚",
+                "aqi.low": "􁃛",
+                "aqi.medium": "􀼭",
+                "aqi.high": "􁷞",
+                "humidity": "􁷠",
+                "humidity.fill": "􁒶",
+                "rainbow": "􁒷",
+                "cloud.rainbow.crop": "􁒸",
+                "cloud.rainbow.crop.fill": "􁒹",
+                "carbon.monoxide.cloud": "􀿪",
+                "carbon.monoxide.cloud.fill": "􀿫",
+                "carbon.dioxide.cloud": "􀿬",
+                "carbon.dioxide.cloud.fill": "􀿭"
+            };
+
+            iconsDay = {
+                0: SFicons["sun.max.fill"],
+                1: SFicons["cloud.sun"],
+                2: SFicons["cloud.sun.fill"],
+                3: SFicons["cloud.fill"],
+                45: SFicons["cloud.fog"],
+                48: SFicons["cloud.fog.fill"],
+                51: SFicons["cloud.drizzle"],
+                53: SFicons["cloud.drizzle.fill"],
+                55: SFicons["cloud.drizzle.fill"],
+                56: SFicons["cloud.drizzle.fill"],
+                
+            }
+
+
+
+            return icons[code] || "􀿪";
+        }
+
+        // Call the fetchWeather function when the page loads
+        document.addEventListener('DOMContentLoaded', fetchWeather);
 
     </script>
     <button onclick="document.getElementById('notif-div').classList.add('show')">SHOW</button>
     <div class="notification" id="notif-div">
-        <p style="font-size: 18px;">Notification</p>
+        <p class="title">Notification</p>
         <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae, aspernatur reiciendis eligendi hic iusto, optio perspiciatis itaque aperiam, cupiditate voluptates ab harum beatae unde? A exercitationem at eligendi natus unde.
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae, aspernatur reiciendis eligendi hic iusto,
+            optio perspiciatis itaque aperiam, cupiditate voluptates ab harum beatae unde? A exercitationem at eligendi
+            natus unde.
         </p>
     </div>
     <div class="top-container">
@@ -233,31 +559,16 @@
                 <h1>Latest Update</h1>
                 <p>Update 1</p>
             </div>
-        </div>    
-        <div class="grid-item">
-            <div class="grid-item-content">
-                <h1>Weather</h1>
-                <p>Currently: 20°C</p>
-                <p>High: 25°C</p>
-                <p>Low: 15°C</p>
-            </div>
         </div>
-        <div class="grid-item">
+        <div class="grid-item" id="weather">
             <div class="grid-item-content">
-                <h1>Calendar</h1>
-                <p>Meeting at 10:00</p>
-                <p>Lunch at 12:00</p>
-                <p>Appointment at 14:00</p>
-            </div>
-        </div>
-        <div class="grid-item">
-            <div class="grid-item-content">
-                <h1>Tasks</h1>
-                <p>Buy milk</p>
-                <p>Walk the dog</p>
-                <p>Finish project</p>
+                <div id="temperature"></div>
+                <div id="weather-icon"></div>
+                <div id="weather-description"></div>
+                <div id="high-low"></div>
             </div>
         </div>
     </div>
 </body>
+
 </html>
