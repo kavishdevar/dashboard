@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "home-assistant-js-websocket": "^9.4.0"
+  }
+}

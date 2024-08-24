@@ -8,6 +8,32 @@
 </head>
 
 <body>
+    <script type="module">
+        import {
+            getAuth,
+            createConnection,
+            subscribeEntities,
+            ERR_HASS_HOST_REQUIRED,
+        } from "https://cdn.jsdelivr.net/npm/home-assistant-js-websocket@latest/dist/index.js";
+
+        window.connect = async function connect() {
+            let auth;
+            try {
+                auth = await getAuth();
+            } catch (err) {
+                if (err === ERR_HASS_HOST_REQUIRED) {
+                    const hassUrl = "http://192.168.1.222:8123";
+                    auth = await getAuth({ hassUrl });
+                } else {
+                    alert(`Unknown error: ${err}`);
+                    return;
+                }
+            }
+            const connection = await createConnection({ auth });
+            subscribeEntities(connection, (ent) => console.log(ent));
+        }
+        
+    </script>
     <style>
         @font-face {
             font-family: 'SF Pro Display Bold';
@@ -193,6 +219,7 @@
             .grid-item-content {
                 gap: 0;
             }
+
             text-shadow: 0 0 32px #000000;
         }
 
@@ -214,7 +241,7 @@
         }
 
         .hass-entity-logo {
-            font-size: 48px;
+            font-size: 32px;
             width: 100%;
             display: flex;
             align-items: center;
@@ -250,6 +277,30 @@
 
             h1 {
                 font-size: 1em
+            }
+        }
+
+        .hass:hover {
+            scale: 1.05;
+            transition: all 0.3s;
+        }
+
+        .hass-grid {
+            background-color: rgb(20 20 20 / 20%);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            padding: 32px;
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            flex-wrap: wrap;
+
+            .grid-item {
+                box-shadow: none;
+                min-width: 100px;
+                min-height: 100px;
+                flex-basis: 0;
+                aspect-ratio: 1;
             }
         }
     </style>
@@ -720,10 +771,36 @@
 
 
         <!-- HomeAssistant Toggle for Light, styled like HomeKit Widget -->
-        <div class="grid-item hass" onclick="togglePantry()" id="pantry-light">
+
+        <div class="hass-grid">
+            <div class="grid-item hass" onclick="togglePantry()" id="pantry-light">
+                <div class="grid-item-content">
+                    <span class="hass-entity-logo">􁌥</span>
+                    <h1 class="center">Pantry Light</h1>
+                </div>
+            </div>
+            <div class="grid-item hass" onclick="togglehass('crockery-drop')" id="crockery-light">
+                <div class="grid-item-content">
+                    <span class="hass-entity-logo">􁎾</span>
+                    <h1 class="center">Crockery Light</h1>
+                </div>
+            </div>
+            <div class="grid-item hass" onclick="togglehass('temple-strip')" id="temple-strip-light">
+                <div class="grid-item-content">
+                    <span class="hass-entity-logo">􁌥</span>
+                    <h1 class="center">Temple Strip light</h1>
+                </div>
+            </div>
+            <div class="grid-item hass" onclick="togglehass('temple-drop')" id="temple-drop-light">
+                <div class="grid-item-content">
+                    <span class="hass-entity-logo">􁎾</span>
+                    <h1 class="center">Temple Drop Light</h1>
+                </div>
+            </div>
+        </div>
+        <div class="grid-item" id="connect-button" onclick="connect()">
             <div class="grid-item-content">
-                <span class="hass-entity-logo">􁌥</span>
-                <h1 class="center">Pantry Light</h1>
+                Connect to HASS!
             </div>
         </div>
     </div>

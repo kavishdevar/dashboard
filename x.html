@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+  <!-- To try locally, run: `yarn build` and then `npx http-server -o` -->
+
+  <body>
+    <button onclick="connection.reconnect()">Reconnect</button>
+    <button onclick="setupEntitiesSubscription()">Re-subscribe</button>
+    <table>
+      <tbody></tbody>
+    </table>
+    <script type="module">
+      import {
+        getAuth,
+        getUser,
+        callService,
+        createConnection,
+        subscribeEntities,
+        ERR_HASS_HOST_REQUIRED,
+      } from "./node_modules/home-assistant-js-websocket/dist/index.js";
+
+      (async () => {
+        let auth;
+        const storeAuth = true;
+        const authOptions = storeAuth
+          ? {
+              async loadTokens() {
+                try {
+                  return JSON.parse(localStorage.hassTokens);
+                } catch (err) {
+                  return undefined;
+                }
+              },
+              saveTokens: (tokens) => {
+                localStorage.hassTokens = JSON.stringify(tokens);
+              },
+            }
+          : {};
+        try {
+          auth = await getAuth(authOptions);
+        } catch (err) {
+          if (err === ERR_HASS_HOST_REQUIRED) {
+            authOptions.hassUrl = prompt(
+              "What host to connect to?",
+              "http://localhost:8123",
+            );
+            if (!authOptions.hassUrl) return;
+            auth = await getAuth(authOptions);
+          } else {
+            alert(`Unknown error: ${err}`);
+            return;
+          }
+        }
+        const connection = await createConnection({ auth });
+        for (const ev of ["disconnected", "ready", "reconnect-error"]) {
+          connection.addEventListener(ev, () => console.log(`Event: ${ev}`));
+        }
+
+        // Clear url if we have been able to establish a connection
+        if (location.search.includes("auth_callback=1")) {
+          history.replaceState(null, "", location.pathname);
+        }
+
+        // To play from the console
+        window.auth = auth;
+        window.connection = connection;
+        getUser(connection).then((user) => {
+          console.log("Logged in as", user);
+          window.user = user;
+        });
+
+        setupEntitiesSubscription();
+      })();
+
+      let unsubEntities;
+
+      window.setupEntitiesSubscription = async () => {
+        if (unsubEntities) {
+          unsubEntities();
+          console.log("Sleeping");
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+        }
+        unsubEntities = subscribeEntities(connection, (entities) =>
+          renderEntities(connection, entities),
+        );
+      };
+
+      function renderEntities(connection, entities) {
+        window.entities = entities;
+        const root = document.querySelector("tbody");
+        while (root.lastChild) root.removeChild(root.lastChild);
+
+        Object.keys(entities)
+          .sort()
+          .forEach((entId) => {
+            const tr = document.createElement("tr");
+
+            const tdName = document.createElement("td");
+            tdName.innerHTML = entId;
+            tr.appendChild(tdName);
+
+            const tdState = document.createElement("td");
+            const text = document.createTextNode(entities[entId].state);
+            tdState.appendChild(text);
+
+            if (
+              ["switch", "light", "input_boolean"].includes(
+                entId.split(".", 1)[0],
+              )
+            ) {
+              const button = document.createElement("button");
+              button.innerHTML = "toggle";
+              button.onclick = () =>
+                callService(connection, "homeassistant", "toggle", {
+                  entity_id: entId,
+                });
+              tdState.appendChild(button);
+            }
+            tr.appendChild(tdState);
+
+            root.appendChild(tr);
+          });
+      }
+    </script>
+  </body>
+</html>
