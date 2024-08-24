@@ -287,8 +287,34 @@
 
         const apiKey = "bd5e378503939ddaee76f12ad7a97608"
 
-        const lat = 28.4117888;
-        const lon = 76.9111255;
+        var lat;
+        var lon;
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+        } 
+        
+        function errorFunction(e){
+            console.log(e);
+        }
+        function successFunction(position) {
+            lat = position.coords.latitude;
+            lon = position.coords.longitude;
+            url = `https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}&api_key=66c8eae54f8ec080296424cawfef11b`
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("location").innerHTML =  'neighbourhood' in data['address'] ? `${data.address.neighbourhood}  <span style="font-size: 0.95em;">􀋒</span>` : `${data.address.city} <span style="font-size: 0.95em;">􀋒</span>`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    lat = 28.41124559532952
+                    lon = 76.91098173525167
+                });
+        }
+        setTimeout(() => {
+            fetchWeatherData();
+        }, 2000);
 
         const SFicons = {
             "sun.min": "􀆫",
@@ -558,7 +584,6 @@
                 // set gradient from 45, 50, 65 to 5, 15, 35
 
                 if (currentTime > sunrise && currentTime < sunset) {
-                    console.log("Daytime");
                     weather.style.backgroundImage = "";
                 } else {
                     weather.style.backgroundImage = "linear-gradient(0deg, rgb(45, 50, 65), rgb(4, 12, 30))";
@@ -578,10 +603,6 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchWeatherData();
-        });
-
         function closeNotif(){
             document.getElementById('notif-div').classList.remove('show');
             setTimeout(() => {
@@ -593,6 +614,10 @@
             document.getElementById('notif-div').style.display = 'block';
             setTimeout(() => {document.getElementById('notif-div').classList.add('show');}, 100);
         }
+
+        setInterval(() => {
+            fetchWeatherData();
+        }, 1000 * 60 * 10);
 
     </script>
     <div class="notification" id="notif-div">
@@ -617,7 +642,7 @@
         </div>
         <div class="grid-item" id="weather">
             <div class="grid-item-content">
-                <div id="location">Gurugram <span style="font-size: 0.95em;">􀋒</span></div>
+                <div id="location">Loading Location</div>
                 <div id="temperature"></div>
                 <div class="spacer"></div>
                 <div id="weather-icon"></div>
