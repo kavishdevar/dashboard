@@ -102,7 +102,7 @@
             padding: 16px;
             backdrop-filter: blur(16px);
             /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
-            box-shadow: 0px 0px 18px 5px #000000;
+            box-shadow: 0px 0px 18px 3px #000000;
             color: white;
             min-width: 150px;
             min-height: 150px;
@@ -117,7 +117,7 @@
         }
 
         h1 {
-            font-size: 2em;
+            font-size: 1.5em;
             margin: 0;
         }
 
@@ -193,11 +193,12 @@
             .grid-item-content {
                 gap: 0;
             }
+            text-shadow: 0 0 32px #000000;
         }
 
         #weather-icon {
             margin: 0;
-            font: 16px 'SF Pro'
+            font: 16px 'SF Pro Text'
         }
 
         #weather-description {
@@ -211,6 +212,19 @@
         .spacer {
             flex-grow: 1;
         }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        hr {
+            width: 98%;
+            opacity: 0.6;
+        }
+
     </style>
     <script>
         function updateClock() {
@@ -287,31 +301,33 @@
 
         const apiKey = "bd5e378503939ddaee76f12ad7a97608"
 
-        var lat;
-        var lon;
+        var lat = 28.41124559532952;
+        var lon = 76.91098173525167;
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
-        } 
-        
-        function errorFunction(e){
+        // if (navigator.geolocation) {
+        //     navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+        // }
+
+        function errorFunction(e) {
             console.log(e);
         }
         function successFunction(position) {
             lat = position.coords.latitude;
             lon = position.coords.longitude;
-            url = `https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}&api_key=66c8eae54f8ec080296424cawfef11b`
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("location").innerHTML =  'neighbourhood' in data['address'] ? `${data.address.neighbourhood}  <span style="font-size: 0.95em;">􀋒</span>` : `${data.address.city} <span style="font-size: 0.95em;">􀋒</span>`;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    lat = 28.41124559532952
-                    lon = 76.91098173525167
-                });
         }
+        url = `https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}&api_key=66c8eae54f8ec080296424cawfef11b`
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("location").innerHTML = 'neighbourhood' in data['address'] ? `${data.address.neighbourhood}  <span style="font-size: 0.95em;">􀋒</span>` : `${data.address.city} <span style="font-size: 0.95em;">􀋒</span>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                lat = 28.41124559532952
+                lon = 76.91098173525167
+            });
+
         setTimeout(() => {
             fetchWeatherData();
         }, 2000);
@@ -490,78 +506,78 @@
 
         const weatherIconMapping = {
             // Clear sky
-            "01d": SFicons["sun.max"], // Clear sky (day)
-            "01n": SFicons["moon.fill"], // Clear sky (night)
+            "01d": SFicons["sun.max"],
+            "01n": SFicons["moon.stars"],
 
             // Few clouds
-            "02d": SFicons["cloud.sun"], // Few clouds (day)
-            "02n": SFicons["cloud.moon"], // Few clouds (night)
+            "02d": SFicons["cloud.sun"],
+            "02n": SFicons["cloud.moon"],
 
             // Scattered clouds
-            "03d": SFicons["cloud.fill"], // Scattered clouds (day/night)
-            "03n": SFicons["cloud"], // Scattered clouds (day/night)
+            "03d": SFicons["cloud.fill"],
+            "03n": SFicons["cloud"],
 
             // Broken clouds
-            "04d": SFicons["cloud.sun.fill"], // Broken clouds (day/night)
-            "04n": SFicons["cloud.moon.fill"], // Broken clouds (day/night)
+            "04d": SFicons["cloud.sun.fill"],
+            "04n": SFicons["cloud.moon.fill"],
 
             // Shower rain
-            "09d": SFicons["cloud.drizzle.fill"], // Shower rain (day)
-            "09n": SFicons["cloud.drizzle.fill"], // Shower rain (night)
+            "09d": SFicons["cloud.drizzle.fill"],
+            "09n": SFicons["cloud.drizzle.fill"],
 
             // Rain
-            "10d": SFicons["cloud.rain"], // Rain (day)
-            "10n": SFicons["cloud.rain.fill"], // Rain (night)
+            "10d": SFicons["cloud.rain"],
+            "10n": SFicons["cloud.rain.fill"],
 
             // Thunderstorm
-            "11d": SFicons["cloud.storm"], // Thunderstorm (day)
-            "11n": SFicons["cloud.bolt.fill"], // Thunderstorm (night)
+            "11d": SFicons["cloud.storm"],
+            "11n": SFicons["cloud.bolt.fill"],
 
             // Snow
-            "13d": SFicons["snowflake"], // Snow (day)
-            "13n": SFicons["snowflake.circle.fill"], // Snow (night)
+            "13d": SFicons["snowflake"],
+            "13n": SFicons["snowflake.circle.fill"],
 
             // Extreme rain
-            "50d": SFicons["mist"], // Mist (day)
-            "50n": SFicons["mist.fill"], // Mist (night)
+            "50d": SFicons["mist"],
+            "50n": SFicons["mist.fill"],
 
             // Drizzle
-            "02d": SFicons["cloud.drizzle"], // Light drizzle (day)
-            "02n": SFicons["cloud.drizzle.fill"], // Light drizzle (night)
-            "30d": SFicons["cloud.drizzle"], // Drizzle (day)
-            "30n": SFicons["cloud.drizzle.fill"], // Drizzle (night)
-            "31d": SFicons["cloud.drizzle"], // Light intensity drizzle (day)
-            "31n": SFicons["cloud.drizzle.fill"], // Light intensity drizzle (night)
-            "32d": SFicons["cloud.drizzle"], // Drizzle rain (day)
-            "32n": SFicons["cloud.drizzle.fill"], // Drizzle rain (night)
+            "02d": SFicons["cloud.drizzle"],
+            "02n": SFicons["cloud.drizzle.fill"],
+            "30d": SFicons["cloud.drizzle"],
+            "30n": SFicons["cloud.drizzle.fill"],
+            "31d": SFicons["cloud.drizzle"],
+            "31n": SFicons["cloud.drizzle.fill"],
+            "32d": SFicons["cloud.drizzle"],
+            "32n": SFicons["cloud.drizzle.fill"],
 
             // Fog
-            "50d": SFicons["cloud.fog"], // Fog (day)
-            "50n": SFicons["cloud.fog.fill"], // Fog (night)
+            "50d": SFicons["cloud.fog"],
+            "50n": SFicons["cloud.fog.fill"],
 
             // Haze
-            "50d": SFicons["cloud.haze"], // Haze (day)
-            "50n": SFicons["cloud.haze.fill"], // Haze (night)
+            "50d": SFicons["cloud.haze"],
+            "50n": SFicons["cloud.haze.fill"],
 
             // Dust
-            "50d": SFicons["cloud.dust"], // Dust (day)
-            "50n": SFicons["cloud.dust.fill"], // Dust (night)
+            "50d": SFicons["cloud.dust"],
+            "50n": SFicons["cloud.dust.fill"],
 
             // Sand
-            "50d": SFicons["cloud.dust"], // Sand (day)
-            "50n": SFicons["cloud.dust.fill"], // Sand (night)
+            "50d": SFicons["cloud.dust"],
+            "50n": SFicons["cloud.dust.fill"],
 
             // Ash
-            "50d": SFicons["cloud.smoke"], // Ash (day)
-            "50n": SFicons["cloud.smoke.fill"], // Ash (night)
+            "50d": SFicons["cloud.smoke"],
+            "50n": SFicons["cloud.smoke.fill"],
 
             // Squall
-            "50d": SFicons["wind"], // Squall (day)
-            "50n": SFicons["wind.fill"], // Squall (night)
+            "50d": SFicons["wind"],
+            "50n": SFicons["wind.fill"],
 
             // Tornado
-            "50d": SFicons["tornado"], // Tornado (day)
-            "50n": SFicons["tornado.fill"], // Tornado (night)
+            "50d": SFicons["tornado"],
+            "50n": SFicons["tornado.fill"],
         };
 
         async function fetchWeatherData() {
@@ -572,19 +588,16 @@
                 document.getElementById("temperature").textContent = `${Math.round(data.main.temp)}°`;
                 document.getElementById("weather-description").textContent = data.weather[0].main;
                 document.getElementById("high-low").textContent = `H: ${Math.round(data.main.temp_max)}° L: ${Math.round(data.main.temp_min)}°`;
-                
+
                 const weather = document.getElementById("weather");
 
-                // Update the weather icon based on the weather condition code and sunrise/sunset times
                 const iconCode = data.weather[0].icon;
                 const sunrise = new Date(data.sys.sunrise * 1000);
                 const sunset = new Date(data.sys.sunset * 1000);
                 const currentTime = new Date();
 
-                // set gradient from 45, 50, 65 to 5, 15, 35
-
                 if (currentTime > sunrise && currentTime < sunset) {
-                    weather.style.backgroundImage = "";
+                    weather.style.backgroundImage = "linear-gradient(0deg, rgb(70, 150, 185), rgb(0, 122, 176))";
                 } else {
                     weather.style.backgroundImage = "linear-gradient(0deg, rgb(45, 50, 65), rgb(4, 12, 30))";
                 }
@@ -603,16 +616,16 @@
             }
         }
 
-        function closeNotif(){
+        function closeNotif() {
             document.getElementById('notif-div').classList.remove('show');
             setTimeout(() => {
                 document.getElementById('notif-div').style.display = 'none';
             }, 500);
         }
 
-        function showNotif(){
+        function showNotif() {
             document.getElementById('notif-div').style.display = 'block';
-            setTimeout(() => {document.getElementById('notif-div').classList.add('show');}, 100);
+            setTimeout(() => { document.getElementById('notif-div').classList.add('show'); }, 100);
         }
 
         setInterval(() => {
@@ -634,12 +647,14 @@
         <div id="clock"></div>
     </div>
     <div class="grid">
-        <div class="grid-item update">
+        <!-- <div class="grid-item update">
             <div class="grid-item-content">
                 <h1>Latest Update</h1>
                 <p>Update 1</p>
             </div>
-        </div>
+        </div> -->
+
+        <!-- Weather -->
         <div class="grid-item" id="weather">
             <div class="grid-item-content">
                 <div id="location">Loading Location</div>
@@ -648,6 +663,18 @@
                 <div id="weather-icon"></div>
                 <div id="weather-description"></div>
                 <div id="high-low"></div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+
+        <div class="grid-item" style="flex-grow: 1;" onclick="showNotif()">
+            <div class="grid-item-content">
+                <h1>Notifications</h1>
+                <p>Click to view</p>
+                <hr>
+                <span> Notification 1: Dad - Lorem Ipsum Dolor....</span>
+                <span> Notification 2: Mom - Lorem Ipsum Dolor....</span>
             </div>
         </div>
     </div>
