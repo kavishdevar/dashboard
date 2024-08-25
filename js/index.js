@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="grid-item hass" onclick="toggle(this)" data-entity="${entity.entity_id}" data-type="${entity.type}">
             <div class="grid-item-content">
             <span class="hass-entity-logo">${entity.logo}</span>
-            <h1 class="center">${entity.name}</h1>
+            <h1 class="hass-entity-name">${entity.name}</h1>
             </div>
         </div>
         `);

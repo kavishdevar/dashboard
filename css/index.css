@@ -204,12 +204,23 @@ p {
 }
 
 .hass-entity-logo {
-    font-size: 32px;
+    /* font-size: 32px;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-grow: 1; */
+    font-size: 24px;
+    width: 100%;
     flex-grow: 1;
+}
+
+.hass-entity-name {
+    /* display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; */
+    font-size: 1.125em !important;
 }
 
 .hass-on {
