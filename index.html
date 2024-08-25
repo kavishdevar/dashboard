@@ -91,18 +91,18 @@
             }
 
 
-            window.toggle = (entity) => {
-                console.log(entity);
-                entity=entities[entity];
-                console.log(entity);
+            window.toggle = (el) => {
+                let entity = entities[el.getAttribute('data-entity')];
                 connection.sendMessagePromise({
                     type: 'call_service',
-                    domain: 'switch',
+                    domain: 'light',
                     service: entity.state === 'on' ? 'turn_off' : 'turn_on',
                     service_data: {
                         entity_id: entity.entity_id
                     },
-                    entity_id: entity.entity_id
+                }).then(() => {
+                    entity.state = entity.state === 'on' ? 'off' : 'on';
+                    updateUI();
                 });
                 updateUI();
             };
@@ -326,7 +326,7 @@
                 gap: 0;
             }
 
-            text-shadow: 0 0 32px #000000;
+            text-shadow: 0 0 32px rgb(0 0 0);
         }
 
         #weather-icon {
@@ -1131,17 +1131,27 @@
                 const sunrise = new Date(data.forecast.forecastday[0].astro.sunrise * 1000);
                 const sunset = new Date(data.forecast.forecastday[0].astro.sunset * 1000);
                 const currentTime = new Date();
-
+                
+                let weatherIcon;
+                
                 if (currentTime > sunrise && currentTime < sunset) {
                     weather.style.backgroundImage = "linear-gradient(0deg, rgb(70, 150, 185), rgb(0, 122, 176))";
+                    for (icon in SFicons) {
+                        if (weatherIconMappingWAPI[data.current.condition.code] == SFicons[icon]) {
+                            console.log("found match")
+                            weatherIcon = icon;
+                            console.log(weatherIcon);
+                            break;
+                        }
+                    }
+                    document.getElementById("weather-icon").innerHTML = `<img src="/icons/${weatherIcon}.png" alt="weather-icon" style="width: 20px; height: 20px; filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(7deg) brightness(109%) contrast(110%);">`;
                 } else {
                     weather.style.backgroundImage = "linear-gradient(0deg, rgb(45, 50, 65), rgb(4, 12, 30))";
+
+                    weatherIcon = weatherIconMappingWAPI[data.current.condition.code];
+                    document.getElementById("weather-icon").textContent = weatherIcon;
                 }
 
-                let weatherIcon;
-
-                weatherIcon = weatherIconMappingWAPI[data.current.condition.code];
-                document.getElementById("weather-icon").textContent = weatherIcon;
             } catch (error) {
                 console.error("Error fetching weather data:", error);
             }
