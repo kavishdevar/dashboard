@@ -1,5 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-    connect();
+
+    const entities = [
+        { name: "Pantry Light", entity: "light.pantry", type: "strip" },
+        { name: "Crockery Light", entity: "light.crockery", type: "recessed" },
+        { name: "Temple Strip light", entity: "light.temple_background", type: "strip" },
+        { name: "Temple Drop Light", entity: "light.temple_top", type: "recessed" },
+        { name: "Kavish's Air Conditioner", entity: "switch.kavish_ac", type: "ac" }
+    ];
+
+    entities.forEach(entity => {
+        document.querySelector('#hass-grid').insertAdjacentHTML('beforeend',
+        `
+        <div class="grid-item hass" onclick="toggle(this)" data-entity="${entity.entity}" data-type="${entity.type}">
+            <div class="grid-item-content">
+            <span class="hass-entity-logo">${entity.logo}</span>
+            <h1 class="center">${entity.name}</h1>
+            </div>
+        </div>
+        `);
+    });
+
+    init(entities);
 });
 
 function updateClock() {

@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Dashboard</title>
-    <script src="js/index.js"></script>
     <script src="js/index.module.js" type="module"></script>
+    <script src="js/index.js"></script>
     <link rel="stylesheet" href="css/index.css">
 </head>
 
@@ -25,14 +25,6 @@
         <div id="clock"></div>
     </div>
     <div class="grid">
-        <!-- <div class="grid-item update">
-            <div class="grid-item-content">
-                <h1>Latest Update</h1>
-                <p>Update 1</p>
-            </div>
-        </div> -->
-
-        <!-- Weather -->
         <div class="grid-item" id="weather">
             <div class="grid-item-content">
                 <div id="location">Loading Location</div>
@@ -46,7 +38,7 @@
 
         <!-- Notifications -->
 
-        <div class="grid-item" style="flex-grow: 1;" onclick="showNotif()">
+        <div class="grid-item" style="flex-grow: 1; cursor: pointer;" onclick="showNotif()">
             <div class="grid-item-content">
                 <h1>Notifications</h1>
                 <p>Click to view</p>
@@ -55,40 +47,8 @@
                 <span> Notification 2: Mom - Lorem Ipsum Dolor....</span>
             </div>
         </div>
-
-
-        <!-- HomeAssistant Toggle for Light, styled like HomeKit Widget -->
-
-        <div class="hass-grid">
-            <div class="grid-item hass" onclick="toggle(this)" id="pantry-light" data-entity="light.pantry"
-                data-type="strip">
-                <div class="grid-item-content">
-                    <span class="hass-entity-logo">􁌥</span>
-                    <h1 class="center">Pantry Light</h1>
-                </div>
-            </div>
-            <div class="grid-item hass" onclick="toggle(this)" id="crockery-light" data-entity="light.crockery"
-                data-type="recessed">
-                <div class="grid-item-content">
-                    <span class="hass-entity-logo">􁎾</span>
-                    <h1 class="center">Crockery Light</h1>
-                </div>
-            </div>
-            <div class="grid-item hass" onclick="toggle(this)" id="temple-strip-light"
-                data-entity="light.temple_background" data-type="strip">
-                <div class="grid-item-content">
-                    <span class="hass-entity-logo">􁌥</span>
-                    <h1 class="center">Temple Strip light</h1>
-                </div>
-            </div>
-            <div class="grid-item hass" onclick="toggle(this)" id="temple-drop-light" data-entity="light.temple_top"
-                data-type="recessed">
-                <div class="grid-item-content">
-                    <span class="hass-entity-logo">􁎾</span>
-                    <h1 class="center">Temple Drop Light</h1>
-                </div>
-            </div>
-        </div>
+        <div class="hass-grid" id="hass-grid"></div>
+    </div>
     </div>
 </body>
 

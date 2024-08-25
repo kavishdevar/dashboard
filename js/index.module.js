@@ -5,7 +5,7 @@ import {
     ERR_HASS_HOST_REQUIRED,
 } from "https://cdn.jsdelivr.net/npm/home-assistant-js-websocket@latest/dist/index.js";
 
-window.init = async () => {
+window.init = async (entities) => {
     let auth;
     const hassUrl = "http://192.168.1.222:8123";
     try {
@@ -46,36 +46,14 @@ window.init = async () => {
         }
     }
 
-    const pantrylight = new Entity('light.pantry');
-    const crockerylight = new Entity('light.crockery');
-    const templebackdrop = new Entity('light.temple_background');
-    const templelight = new Entity('light.temple_top');
-
-    window.entities = {}
-
-    entities[pantrylight.entity_id] = pantrylight;
-    entities[crockerylight.entity_id] = crockerylight;
-    entities[templebackdrop.entity_id] = templebackdrop;
-    entities[templelight.entity_id] = templelight;
-
     function changed(ent) {
-        console.log(ent)
-        for (var entity in ent) {
-            entity = ent[entity];
-            if (entity.entity_id === 'light.pantry') {
-                pantrylight.state = entity.state;
-                pantrylight.attributes = entity.attributes;
-            } else if (entity.entity_id === 'light.crockery') {
-                crockerylight.state = entity.state;
-                crockerylight.attributes = entity.attributes;
-            } else if (entity.entity_id === 'light.temple_background') {
-                templebackdrop.state = entity.state;
-                templebackdrop.attributes = entity.attributes;
-            } else if (entity.entity_id === 'light.temple_top') {
-                templelight.state = entity.state;
-                templelight.attributes = entity.attributes;
+        for (const entity_id in ent) {
+            const entity = ent[entity_id];
+            if (entities[entity.entity_id]) {
+                entities[entity.entity_id].state = entity.state;
+                entities[entity.entity_id].attributes = entity.attributes;
             }
-        };
+        }
         updateUI();
     }
 
@@ -84,7 +62,7 @@ window.init = async () => {
         let entity = entities[el.getAttribute('data-entity')];
         connection.sendMessagePromise({
             type: 'call_service',
-            domain: 'light',
+            domain: entity.entity_id.split('.')[0],
             service: entity.state === 'on' ? 'turn_off' : 'turn_on',
             service_data: {
                 entity_id: entity.entity_id
@@ -97,33 +75,34 @@ window.init = async () => {
     };
 
     function updateUI() {
-        for (var entity in entities) {
-            entity = entities[entity];
+        entities.forEach(entity => {
+            // const entities = [
+            //     { name: "Pantry Light", entity: "light.pantry", type: "strip" },
+            //     { name: "Crockery Light", entity: "light.crockery", type: "recessed" },
+            //     { name: "Temple Strip light", entity: "light.temple_background", type: "strip" },
+            //     { name: "Temple Drop Light", entity: "light.temple_top", type: "recessed" },
+            //     { name: "Kavish's Air Conditioner", entity: "switch.kavish_ac", type: "ac" }
+            // ];
+        
             const el = document.querySelector(`[data-entity="${entity.entity_id}"]`);
+            console.log(el);
             const type = el.getAttribute('data-type');
-            if (entity.state === 'on') {
-                el.classList.add('hass-on');
-            } else {
-                el.classList.remove('hass-on');
-            }
+            const logo = el.querySelector('.hass-entity-logo');
 
-            if (type == 'strip') {
-                if (entity.state === 'off') {
-                    el.classList.remove('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁌥';
-                } else {
-                    el.classList.add('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁏒';
+            el.classList.toggle('hass-on', entity.state === 'on');
+
+            if (type && logo) {
+                const icons = {
+                    strip: { on: '􁏒', off: '􁌥' },
+                    recessed: { on: '􁌢', off: '􁎾' },
+                    ac: { on: '􁓮', off: '􁓭' }
+                };
+                if (entity.state === 'unavailable') {
+                    logo.innerHTML = icons[type].off;
+                    document.querySelector(`[data-entity="${entity.entity_id}"]`).classList.add('hass-unavailable');
                 }
-            } else if (type == 'recessed') {
-                if (entity.state === 'off') {
-                    el.classList.remove('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁎾';
-                } else {
-                    el.classList.add('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁌢';
-                }
+                logo.innerHTML = icons[type][entity.state];
             }
-        };
+        });
     }
 };

@@ -266,3 +266,13 @@ hr {
         aspect-ratio: 1;
     }
 }
+
+.hass-unavailable {
+    background-color: rgb(20 20 20 / 20%);
+    backdrop-filter: blur(16px);
+    pointer-events: none;
+}
+
+.hass-unavailable:hover {
+    scale: 1;
+}
