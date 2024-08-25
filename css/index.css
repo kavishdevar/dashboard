@@ -1,0 +1,268 @@
+@font-face {
+    font-family: 'SF Pro Display Bold';
+    font-weight: bolder;
+    src: url('../fonts/clock.otf');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-weight: normal;
+    src: url('../fonts/display.otf');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-weight: normal;
+    src: url('../fonts/default.otf');
+}
+
+@font-face {
+    font-family: 'SF Pro Text Light';
+    font-weight: lighter;
+    src: url('../fonts/light.otf');
+}
+
+@font-face {
+    font-family: 'SF Pro Display Light';
+    font-weight: lighter;
+    src: url('../fonts/display-light.otf');
+}
+
+html {
+    height: 100dvh;
+    background-image: url('../imgs/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    padding: 24px;
+    height: 100%;
+    width: 80%;
+    overflow: scroll;
+}
+
+.top-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+#date {
+    font-size: 2em;
+    color: white;
+    opacity: 0.9;
+    white-space: nowrap;
+    margin-bottom: -8px;
+    font-family: 'SF Pro Display';
+}
+
+#clock {
+    font-size: 8em;
+    color: white;
+    opacity: 0.9;
+    font-family: 'SF Pro Display Bold';
+}
+
+.grid {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.grid-item {
+    background-color: rgb(13 13 13 / 56%);
+    /* background-color: rgb(44 44 44 / 100%); */
+    border-radius: 24px;
+    padding: 16px;
+    backdrop-filter: blur(16px);
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+    box-shadow: 0px 0px 18px 3px #000000;
+    color: white;
+    min-width: 150px;
+    min-height: 150px;
+    font-family: 'SF Pro Display';
+}
+
+.grid-item-content {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 8px;
+}
+
+h1 {
+    font-size: 1.5em;
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+.update {
+    width: 100%;
+}
+
+.notification {
+    display: none;
+    top: 16px;
+    font-family: 'SF Pro Display';
+    text-rendering: geometricPrecision;
+    position: absolute;
+    background-color: rgba(28, 28, 28, 0.82);
+    color: white;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgb(70, 70, 70, 0.61);
+    padding: 8px;
+    border-radius: 24px;
+    right: -100%;
+    margin-top: 24px;
+    min-width: 400px;
+    min-height: 70px;
+    z-index: 100;
+    font-size: 15px;
+    max-width: 50%;
+    padding: 16px;
+    box-shadow: 0 0 100px 40px rgb(0 0 0 / 67%);
+
+    transition: right 0.3s;
+
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+}
+
+.close {
+    position: absolute;
+    left: -8px;
+    top: -8px;
+    background-color: #2d2d2d;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    font-family: 'SF Pro Text';
+    font-size: 10px;
+    padding: 0;
+    border-radius: 10000px;
+    backdrop-filter: blur(16px);
+    border: 1px solid rgb(70, 70, 70, 0.61);
+    width: 22px;
+    height: 22px;
+    box-shadow: 3px 3px 20px 1px rgb(0 0 0)
+}
+
+.show {
+    right: 24px !important;
+    transition: right 0.3s;
+}
+
+#temperature {
+    font-size: 3em;
+    font-family: 'SF Pro Display Light';
+}
+
+#weather {
+    .grid-item-content {
+        gap: 0;
+    }
+
+    text-shadow: 0 0 32px rgb(0 0 0);
+}
+
+#weather-icon {
+    margin: 0;
+    font: 16px 'SF Pro Text'
+}
+
+#weather-description {
+    font-size: 16px;
+}
+
+#high-low {
+    font-size: 14px;
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+.hass-entity-logo {
+    font-size: 32px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.hass-on {
+    background-color: rgb(255 255 255);
+    color: rgb(36 36 36);
+    box-shadow: none;
+
+    .hass-entity-logo {
+        color: rgb(255 208 0);
+    }
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+hr {
+    width: 98%;
+    opacity: 0.6;
+}
+
+.hass {
+    cursor: pointer;
+    transition: all 0.3s;
+
+    h1 {
+        font-size: 1em
+    }
+}
+
+.hass:hover {
+    scale: 1.05;
+    transition: all 0.3s;
+}
+
+.hass-grid {
+    background-color: rgb(20 20 20 / 20%);
+    border-radius: 24px;
+    backdrop-filter: blur(16px);
+    padding: 32px;
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
+
+    .grid-item {
+        box-shadow: none;
+        min-width: 100px;
+        min-height: 100px;
+        flex-basis: 0;
+        aspect-ratio: 1;
+    }
+}
