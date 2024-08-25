@@ -18,30 +18,27 @@
 
         window.connect = async function connect() {
             let auth;
+            const hassUrl = "http://192.168.1.222:8123";
             try {
-                auth = await getAuth();
-            } catch (err) {
-                if (err === ERR_HASS_HOST_REQUIRED) {
-                    const hassUrl = "http://192.168.1.222:8123";
-                    // getAuth({ hassUrl: "http://localhost:8123" });
-                    // Option	Description
-                    // hassUrl	The url where the Home Assistant instance can be reached. This option is needed so we know where to redirect the user for authentication. Once redirected back, it is not needed to pass this option in.
-                    // clientId	Client ID to use. Client IDs for Home Assistant is the url of your application. Defaults to domain of current page. Pass null if you are making requests on behalf of a system user.
-                    // redirectUrl	The url to redirect back to when the user has logged in. Defaults to current page.
-                    // saveTokens	Function to store an object containing the token information.
-                    // loadTokens	Function that returns a promise that resolves to previously stored token information object or undefined if no info available.
-                    // authCode	If you have an auth code received via other means, you can pass it in and it will be used to fetch tokens instead of going through the OAuth2 flow.
-                    // limitHassInstance	If set to true, allow only authentication credentials for the passed in hassUrl and clientId. Defaults to false.
-
-                    const auth = await getAuth({
+                auth = await getAuth(
+                    {
                         hassUrl,
-                        redirectUrl: window.location.href,
                         saveTokens: (tokens) => {
                             localStorage.setItem("tokens", JSON.stringify(tokens));
                         },
                         loadTokens: () => {
                             return JSON.parse(localStorage.getItem("tokens"));
-                        },
+                        }
+                    }
+                );
+            } catch (err) {
+                if (err === ERR_HASS_HOST_REQUIRED) {
+                    const auth = await getAuth({
+                        hassUrl,
+                        redirectUrl: window.location.href,
+                        saveTokens: (tokens) => {
+                            localStorage.setItem("tokens", JSON.stringify(tokens));
+                        }
                     });
                 } else {
                     alert(`Unknown error: ${err}`);
@@ -49,36 +46,33 @@
                 }
             }
             const connection = await createConnection({ auth });
-            subscribeEntities(connection, (ent) => changed(ent));
-
-            window.connection = connection;
-
+            subscribeEntities(connection, (entities) => {
+                changed(entities);
+            });
             class Entity {
-                constructor(entityId) {
-                    this.entityId = entityId;
+                constructor(entity_id) {
+                    this.entity_id = entity_id;
                     this.state = null;
                     this.attributes = {};
                 }
             }
 
-            pantrylight = new Entity('switch.crockery_set_switch_1');
-            crockerylight = new Entity('switch.crockery_set_switch_2');
-            templebackdrop = new Entity('switch.crockery_set_switch_3');
-            templelight = new Entity('switch.crockery_set_switch_4');
+            const pantrylight = new Entity('switch.crockery_set_switch_1');
+            const crockerylight = new Entity('switch.crockery_set_switch_2');
+            const templebackdrop = new Entity('switch.crockery_set_switch_3');
+            const templelight = new Entity('switch.crockery_set_switch_4');
 
-            const entities = [pantrylight, crockerylight, templebackdrop, templelight];
+            window.entities = {}
 
-            entities.forEach(entity => {
-                connection.sendMessagePromise({
-                    type: 'subscribe_events',
-                    event_type: 'state_changed',
-                    entity_id: entity.entityId
-                });
-            });
+            entities[pantrylight.entity_id] = pantrylight;
+            entities[crockerylight.entity_id] = crockerylight;
+            entities[templebackdrop.entity_id] = templebackdrop;
+            entities[templelight.entity_id] = templelight;
 
             function changed(ent) {
                 console.log(ent)
                 for (var entity in ent) {
+                    entity = ent[entity];
                     if (entity.entity_id === 'switch.crockery_set_switch_1') {
                         pantrylight.state = entity.state;
                         pantrylight.attributes = entity.attributes;
@@ -93,19 +87,32 @@
                         templelight.attributes = entity.attributes;
                     }
                 };
+                updateUI();
             }
 
-            
+
             window.toggle = function toggle(entity) {
                 connection.sendMessagePromise({
                     type: 'call_service',
                     domain: 'switch',
                     service: entity.state === 'on' ? 'turn_off' : 'turn_on',
                     service_data: {
-                        entity_id: entity.entityId
+                        entity_id: entity.entity_id
                     }
                 });
             };
+
+            function updateUI() {
+                for (var entity in entities) {
+                    entity = entities[entity];
+                    const el = document.querySelector(`[data-entity="${entity.entity_id}"]`);
+                    if (entity.state === 'on') {
+                        el.classList.add('hass-on');
+                    } else {
+                        el.classList.remove('hass-on');
+                    }
+                };
+            }
         };
 
     </script>
@@ -380,6 +387,10 @@
         }
     </style>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            connect();
+        });
+
         function updateClock() {
             const now = new Date();
             var hours = now.getHours().toString().padStart(2, '0');
@@ -413,43 +424,6 @@
         var touchstartY = 0;
         var touchendX = 0;
         var touchendY = 0;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const notification = document.getElementById('notif-div');
-
-            notification.addEventListener('touchstart', function (event) {
-                touchstartX = event.changedTouches[0].screenX;
-                touchstartY = event.changedTouches[0].screenY;
-            }, false);
-
-            notification.addEventListener('touchend', function (event) {
-                touchendX = event.changedTouches[0].screenX;
-                touchendY = event.changedTouches[0].screenY;
-                handleGesture();
-            }, false);
-        });
-
-        function handleGesture() {
-            if (touchendX < touchstartX) {
-                console.log('Swiped Left');
-            }
-
-            if (touchendX > touchstartX) {
-                console.log('Swiped Right');
-            }
-
-            if (touchendY < touchstartY) {
-                console.log('Swiped Up');
-            }
-
-            if (touchendY > touchstartY) {
-                console.log('Swiped Down');
-            }
-
-            if (touchendY === touchstartY) {
-                console.log('Tap');
-            }
-        }
 
         let apiKey = '';
 
@@ -1167,17 +1141,28 @@
             fetchWeatherData();
         }, 1000 * 60 * 10);
 
-        function togglePantry() {
-            if (document.getElementById('pantry-light').classList.contains('hass-on')) {
-                document.getElementById('pantry-light').classList.remove('hass-on');
-                document.getElementById('pantry-light').querySelector('.hass-entity-logo').innerHTML = '􁌥';
-                toggle('pantry-light');
-                return;
-            }
-            else {
-                document.getElementById('pantry-light').classList.add('hass-on');
-                document.getElementById('pantry-light').querySelector('.hass-entity-logo').innerHTML = '􁏒';
-                return;
+        function toggle(el) {
+            const entity = el.getAttribute('data-entity');
+            const type = el.getAttribute('data-type');
+
+            // togglehass(entity);
+
+            if (type == 'strip') {
+                if (el.classList.contains('hass-on')) {
+                    el.classList.remove('hass-on');
+                    el.querySelector('.hass-entity-logo').innerHTML = '􁌥';
+                } else {
+                    el.classList.add('hass-on');
+                    el.querySelector('.hass-entity-logo').innerHTML = '􁏒';
+                }
+            } else if (type == 'recessed') {
+                if (el.classList.contains('hass-on')) {
+                    el.classList.remove('hass-on');
+                    el.querySelector('.hass-entity-logo').innerHTML = '􁎾';
+                } else {
+                    el.classList.add('hass-on');
+                    el.querySelector('.hass-entity-logo').innerHTML = '􁏒';
+                }
             }
         }
 
@@ -1231,34 +1216,29 @@
         <!-- HomeAssistant Toggle for Light, styled like HomeKit Widget -->
 
         <div class="hass-grid">
-            <div class="grid-item hass" onclick="togglePantry()" id="pantry-light">
+            <div class="grid-item hass" onclick="toggle(this)" id="pantry-light" data-entity="switch.crockery_set_switch_1" data-type="strip">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁌥</span>
                     <h1 class="center">Pantry Light</h1>
                 </div>
             </div>
-            <div class="grid-item hass" onclick="togglehass('crockery-drop')" id="crockery-light">
+            <div class="grid-item hass" onclick="toggle(this)" id="crockery-light" data-entity="switch.crockery_set_switch_2" data-type="recessed">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁎾</span>
                     <h1 class="center">Crockery Light</h1>
                 </div>
             </div>
-            <div class="grid-item hass" onclick="togglehass('temple-strip')" id="temple-strip-light">
+            <div class="grid-item hass" onclick="toggle(this)" id="temple-strip-light" data-entity="switch.crockery_set_switch_3" data-type="strip">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁌥</span>
                     <h1 class="center">Temple Strip light</h1>
                 </div>
             </div>
-            <div class="grid-item hass" onclick="togglehass('temple-drop')" id="temple-drop-light">
+            <div class="grid-item hass" onclick="toggle(this)" id="temple-drop-light" data-entity="switch.crockery_set_switch_4" data-type="recessed">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁎾</span>
                     <h1 class="center">Temple Drop Light</h1>
                 </div>
-            </div>
-        </div>
-        <div class="grid-item" id="connect-button" onclick="connect()">
-            <div class="grid-item-content">
-                Connect to HASS!
             </div>
         </div>
     </div>
