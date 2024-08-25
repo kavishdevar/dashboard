@@ -57,10 +57,10 @@
                 }
             }
 
-            const pantrylight = new Entity('switch.crockery_set_switch_1');
-            const crockerylight = new Entity('switch.crockery_set_switch_2');
-            const templebackdrop = new Entity('switch.crockery_set_switch_3');
-            const templelight = new Entity('switch.crockery_set_switch_4');
+            const pantrylight = new Entity('light.pantry');
+            const crockerylight = new Entity('light.crockery');
+            const templebackdrop = new Entity('light.temple_background');
+            const templelight = new Entity('light.temple_top');
 
             window.entities = {}
 
@@ -73,16 +73,16 @@
                 console.log(ent)
                 for (var entity in ent) {
                     entity = ent[entity];
-                    if (entity.entity_id === 'switch.crockery_set_switch_1') {
+                    if (entity.entity_id === 'light.pantry') {
                         pantrylight.state = entity.state;
                         pantrylight.attributes = entity.attributes;
-                    } else if (entity.entity_id === 'switch.crockery_set_switch_2') {
+                    } else if (entity.entity_id === 'light.crockery') {
                         crockerylight.state = entity.state;
                         crockerylight.attributes = entity.attributes;
-                    } else if (entity.entity_id === 'switch.crockery_set_switch_3') {
+                    } else if (entity.entity_id === 'light.temple_background') {
                         templebackdrop.state = entity.state;
                         templebackdrop.attributes = entity.attributes;
-                    } else if (entity.entity_id === 'switch.crockery_set_switch_4') {
+                    } else if (entity.entity_id === 'light.temple_top') {
                         templelight.state = entity.state;
                         templelight.attributes = entity.attributes;
                     }
@@ -91,25 +91,49 @@
             }
 
 
-            window.toggle = function toggle(entity) {
+            window.toggle = (entity) => {
+                console.log(entity);
+                entity=entities[entity];
+                console.log(entity);
                 connection.sendMessagePromise({
                     type: 'call_service',
                     domain: 'switch',
                     service: entity.state === 'on' ? 'turn_off' : 'turn_on',
                     service_data: {
                         entity_id: entity.entity_id
-                    }
+                    },
+                    entity_id: entity.entity_id
                 });
+                updateUI();
             };
 
             function updateUI() {
                 for (var entity in entities) {
                     entity = entities[entity];
                     const el = document.querySelector(`[data-entity="${entity.entity_id}"]`);
+                    const type = el.getAttribute('data-type');
                     if (entity.state === 'on') {
                         el.classList.add('hass-on');
                     } else {
                         el.classList.remove('hass-on');
+                    }
+
+                    if (type == 'strip') {
+                        if (entity.state === 'off') {
+                            el.classList.remove('hass-on');
+                            el.querySelector('.hass-entity-logo').innerHTML = '􁌥';
+                        } else {
+                            el.classList.add('hass-on');
+                            el.querySelector('.hass-entity-logo').innerHTML = '􁏒';
+                        }
+                    } else if (type == 'recessed') {
+                        if (entity.state === 'off') {
+                            el.classList.remove('hass-on');
+                            el.querySelector('.hass-entity-logo').innerHTML = '􁎾';
+                        } else {
+                            el.classList.add('hass-on');
+                            el.querySelector('.hass-entity-logo').innerHTML = '􁌢';
+                        }
                     }
                 };
             }
@@ -1140,32 +1164,6 @@
         setInterval(() => {
             fetchWeatherData();
         }, 1000 * 60 * 10);
-
-        function toggle(el) {
-            const entity = el.getAttribute('data-entity');
-            const type = el.getAttribute('data-type');
-
-            // togglehass(entity);
-
-            if (type == 'strip') {
-                if (el.classList.contains('hass-on')) {
-                    el.classList.remove('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁌥';
-                } else {
-                    el.classList.add('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁏒';
-                }
-            } else if (type == 'recessed') {
-                if (el.classList.contains('hass-on')) {
-                    el.classList.remove('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁎾';
-                } else {
-                    el.classList.add('hass-on');
-                    el.querySelector('.hass-entity-logo').innerHTML = '􁏒';
-                }
-            }
-        }
-
     </script>
     <div class="notification" id="notif-div">
         <button class="close" onclick="closeNotif()">􀆄</button>
@@ -1216,25 +1214,29 @@
         <!-- HomeAssistant Toggle for Light, styled like HomeKit Widget -->
 
         <div class="hass-grid">
-            <div class="grid-item hass" onclick="toggle(this)" id="pantry-light" data-entity="switch.crockery_set_switch_1" data-type="strip">
+            <div class="grid-item hass" onclick="toggle(this)" id="pantry-light" data-entity="light.pantry"
+                data-type="strip">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁌥</span>
                     <h1 class="center">Pantry Light</h1>
                 </div>
             </div>
-            <div class="grid-item hass" onclick="toggle(this)" id="crockery-light" data-entity="switch.crockery_set_switch_2" data-type="recessed">
+            <div class="grid-item hass" onclick="toggle(this)" id="crockery-light" data-entity="light.crockery"
+                data-type="recessed">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁎾</span>
                     <h1 class="center">Crockery Light</h1>
                 </div>
             </div>
-            <div class="grid-item hass" onclick="toggle(this)" id="temple-strip-light" data-entity="switch.crockery_set_switch_3" data-type="strip">
+            <div class="grid-item hass" onclick="toggle(this)" id="temple-strip-light"
+                data-entity="light.temple_background" data-type="strip">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁌥</span>
                     <h1 class="center">Temple Strip light</h1>
                 </div>
             </div>
-            <div class="grid-item hass" onclick="toggle(this)" id="temple-drop-light" data-entity="switch.crockery_set_switch_4" data-type="recessed">
+            <div class="grid-item hass" onclick="toggle(this)" id="temple-drop-light" data-entity="light.temple_top"
+                data-type="recessed">
                 <div class="grid-item-content">
                     <span class="hass-entity-logo">􁎾</span>
                     <h1 class="center">Temple Drop Light</h1>
