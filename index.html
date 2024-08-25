@@ -23,16 +23,90 @@
             } catch (err) {
                 if (err === ERR_HASS_HOST_REQUIRED) {
                     const hassUrl = "http://192.168.1.222:8123";
-                    auth = await getAuth({ hassUrl });
+                    // getAuth({ hassUrl: "http://localhost:8123" });
+                    // Option	Description
+                    // hassUrl	The url where the Home Assistant instance can be reached. This option is needed so we know where to redirect the user for authentication. Once redirected back, it is not needed to pass this option in.
+                    // clientId	Client ID to use. Client IDs for Home Assistant is the url of your application. Defaults to domain of current page. Pass null if you are making requests on behalf of a system user.
+                    // redirectUrl	The url to redirect back to when the user has logged in. Defaults to current page.
+                    // saveTokens	Function to store an object containing the token information.
+                    // loadTokens	Function that returns a promise that resolves to previously stored token information object or undefined if no info available.
+                    // authCode	If you have an auth code received via other means, you can pass it in and it will be used to fetch tokens instead of going through the OAuth2 flow.
+                    // limitHassInstance	If set to true, allow only authentication credentials for the passed in hassUrl and clientId. Defaults to false.
+
+                    const auth = await getAuth({
+                        hassUrl,
+                        redirectUrl: window.location.href,
+                        saveTokens: (tokens) => {
+                            localStorage.setItem("tokens", JSON.stringify(tokens));
+                        },
+                        loadTokens: () => {
+                            return JSON.parse(localStorage.getItem("tokens"));
+                        },
+                    });
                 } else {
                     alert(`Unknown error: ${err}`);
                     return;
                 }
             }
             const connection = await createConnection({ auth });
-            subscribeEntities(connection, (ent) => console.log(ent));
+            subscribeEntities(connection, (ent) => changed(ent));
 
-        }
+            window.connection = connection;
+
+            class Entity {
+                constructor(entityId) {
+                    this.entityId = entityId;
+                    this.state = null;
+                    this.attributes = {};
+                }
+            }
+
+            pantrylight = new Entity('switch.crockery_set_switch_1');
+            crockerylight = new Entity('switch.crockery_set_switch_2');
+            templebackdrop = new Entity('switch.crockery_set_switch_3');
+            templelight = new Entity('switch.crockery_set_switch_4');
+
+            const entities = [pantrylight, crockerylight, templebackdrop, templelight];
+
+            entities.forEach(entity => {
+                connection.sendMessagePromise({
+                    type: 'subscribe_events',
+                    event_type: 'state_changed',
+                    entity_id: entity.entityId
+                });
+            });
+
+            function changed(ent) {
+                console.log(ent)
+                for (var entity in ent) {
+                    if (entity.entity_id === 'switch.crockery_set_switch_1') {
+                        pantrylight.state = entity.state;
+                        pantrylight.attributes = entity.attributes;
+                    } else if (entity.entity_id === 'switch.crockery_set_switch_2') {
+                        crockerylight.state = entity.state;
+                        crockerylight.attributes = entity.attributes;
+                    } else if (entity.entity_id === 'switch.crockery_set_switch_3') {
+                        templebackdrop.state = entity.state;
+                        templebackdrop.attributes = entity.attributes;
+                    } else if (entity.entity_id === 'switch.crockery_set_switch_4') {
+                        templelight.state = entity.state;
+                        templelight.attributes = entity.attributes;
+                    }
+                };
+            }
+
+            
+            window.toggle = function toggle(entity) {
+                connection.sendMessagePromise({
+                    type: 'call_service',
+                    domain: 'switch',
+                    service: entity.state === 'on' ? 'turn_off' : 'turn_on',
+                    service_data: {
+                        entity_id: entity.entityId
+                    }
+                });
+            };
+        };
 
     </script>
     <style>
@@ -1097,6 +1171,7 @@
             if (document.getElementById('pantry-light').classList.contains('hass-on')) {
                 document.getElementById('pantry-light').classList.remove('hass-on');
                 document.getElementById('pantry-light').querySelector('.hass-entity-logo').innerHTML = '􁌥';
+                toggle('pantry-light');
                 return;
             }
             else {
