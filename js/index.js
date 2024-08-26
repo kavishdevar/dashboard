@@ -753,13 +753,53 @@ async function fetchWeatherWAPI() {
 
         if (data.current.is_day == 1) {
             weather.style.backgroundImage = "linear-gradient(0deg, rgb(70, 150, 185), rgb(0, 122, 176))";
-            for (icon in SFicons) {
-                if (weatherIconMappingWAPI[data.current.condition.code] == SFicons[icon]) {
-                    weatherIcon = icon;
-                    break;
+            const specificIcons = [
+                "cloud.sleet.fill.png",
+                "aqi.high.png",
+                "cloud.bolt.rain.fill.png",
+                "cloud.drizzle.fill.png",
+                "cloud.heavyrain.fill.png",
+                "cloud.moon.rain.circle.png",
+                "cloud.moon.rain.fill.png",
+                "cloud.rain.fill.png",
+                "cloud.rainbow.crop.fill.png",
+                "cloud.rainbow.crop.png",
+                "cloud.sun.bolt.fill.png",
+                "cloud.sun.fill.png",
+                "cloud.sun.rain.fill.png",
+                "moon.circle.fill.png",
+                "rainbow.png",
+                "sparkles.png",
+                "sun.dust.fill.png",
+                "sun.haze.fill.png",
+                "sun.horizon.fill.png",
+                "sun.max.fill.png",
+                "sun.max.trianglebadge.exclamationmark.fill.png",
+                "sun.max.trianglebadge.exclamationmark.png",
+                "sun.rain.fill.png",
+                "sun.snow.fill.png",
+                "sunrise.fill.png",
+                "sunset.fill.png",
+                "thermometer.high.png",
+                "thermometer.low.png",
+                "thermometer.snowflake.png",
+                "thermometer.sun.fill.png"
+            ];
+
+            const currentIcon = weatherIconMappingWAPI[data.current.condition.code];
+
+            if (specificIcons.includes(currentIcon)) {
+                for (icon in SFicons) {
+                    if (currentIcon == SFicons[icon]) {
+                        weatherIcon = icon;
+                        break;
+                    }
                 }
+                document.getElementById("weather-icon").innerHTML = `<img src="/icons/${weatherIcon}.png" alt="weather-icon" style="width: 20px; height: 20px; filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(7deg) brightness(109%) contrast(110%);">`;
+            } else {
+                weatherIcon = currentIcon;
+                document.getElementById("weather-icon").innerHTML = weatherIcon;
             }
-            document.getElementById("weather-icon").innerHTML = `<img src="/icons/${weatherIcon}.png" alt="weather-icon" style="width: 20px; height: 20px; filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(7deg) brightness(109%) contrast(110%);">`;
         } else {
             console.log("night")
             weather.style.backgroundImage = "linear-gradient(0deg, rgb(45, 50, 65), rgb(4, 12, 30))";
