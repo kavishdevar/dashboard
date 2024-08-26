@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     entities.forEach(entity => {
         document.querySelector('#hass-grid').insertAdjacentHTML('beforeend',
-        `
+            `
         <div class="grid-item hass" onclick="toggle(this)" data-entity="${entity.entity_id}" data-type="${entity.type}">
             <div class="grid-item-content">
             <span class="hass-entity-logo">${entity.logo}</span>
@@ -749,14 +749,22 @@ async function fetchWeatherWAPI() {
 
         const weather = document.getElementById("weather");
 
-        const iconCode = data.current.condition.icon;
 
-        const sunrise = new Date(data.forecast.forecastday[0].astro.sunrise * 1000);
-        const sunset = new Date(data.forecast.forecastday[0].astro.sunset * 1000);
+        const sunriseString = data.forecast.forecastday[0].astro.sunrise; // 5:50 AM
+        const sunsetString = data.forecast.forecastday[0].astro.sunset; // 6:50 PM
+
+        const date = new Date();
+        const sunriseFormatted = date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' }) + " " + sunriseString;
+        const sunrise = new Date(sunriseFormatted);
+        const sunsetFormatted = date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' }) + " " + sunsetString;
+        const sunset = new Date(sunsetFormatted);
+
+        console.log(sunrise, sunset);
+
         const currentTime = new Date();
-        
+
         let weatherIcon;
-        
+
         if (currentTime > sunrise && currentTime < sunset) {
             weather.style.backgroundImage = "linear-gradient(0deg, rgb(70, 150, 185), rgb(0, 122, 176))";
             for (icon in SFicons) {
@@ -767,6 +775,7 @@ async function fetchWeatherWAPI() {
             }
             document.getElementById("weather-icon").innerHTML = `<img src="/icons/${weatherIcon}.png" alt="weather-icon" style="width: 20px; height: 20px; filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(7deg) brightness(109%) contrast(110%);">`;
         } else {
+            console.log("night")
             weather.style.backgroundImage = "linear-gradient(0deg, rgb(45, 50, 65), rgb(4, 12, 30))";
 
             weatherIcon = weatherIconMappingWAPI[data.current.condition.code];
