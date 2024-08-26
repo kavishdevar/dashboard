@@ -749,23 +749,9 @@ async function fetchWeatherWAPI() {
 
         const weather = document.getElementById("weather");
 
-
-        const sunriseString = data.forecast.forecastday[0].astro.sunrise; // 5:50 AM
-        const sunsetString = data.forecast.forecastday[0].astro.sunset; // 6:50 PM
-
-        const date = new Date();
-        const sunriseFormatted = date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' }) + " " + sunriseString;
-        const sunrise = new Date(sunriseFormatted);
-        const sunsetFormatted = date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' }) + " " + sunsetString;
-        const sunset = new Date(sunsetFormatted);
-
-        console.log(sunrise, sunset);
-
-        const currentTime = new Date();
-
         let weatherIcon;
 
-        if (currentTime > sunrise && currentTime < sunset) {
+        if (data.current.is_day == 1) {
             weather.style.backgroundImage = "linear-gradient(0deg, rgb(70, 150, 185), rgb(0, 122, 176))";
             for (icon in SFicons) {
                 if (weatherIconMappingWAPI[data.current.condition.code] == SFicons[icon]) {
