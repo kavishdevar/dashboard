@@ -842,14 +842,15 @@ async function getSpotifyPlaybackState() {
             id = data.spotify.id;
             secret = data.spotify.secret;
             code = data.spotify.code;
+
+            // Request header field access-control-allow-origin is not allowed by Access-Control-Allow-Headers in preflight response.
             const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorizaiton': `Basic ${btoa(`${id}:${secret}`)}`,
-                    'Access-Control-Allow-Origin': '*'
+                    'Authorizaiton': `Basic ${btoa(`${id}:${secret}`)}`
                 },
-                body: `grant_type=authorization_code&code=${code}&redirect_uri=http://localhost:8080/callback`
+                body: `grant_type=authorization_code&code=${code}&redirect_uri=http://localhost:8080/callback`,
             });
             const tokenData = await tokenResponse.json();
             expiresIn = tokenData.expires_in;
