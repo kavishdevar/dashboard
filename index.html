@@ -39,13 +39,30 @@
 
         <!-- Notifications -->
 
-        <div class="grid-item" style="flex-grow: 1; cursor: pointer;" onclick="showNotif()">
+        <!-- <div class="grid-item" style="flex-grow: 1; cursor: pointer;" onclick="showNotif()">
             <div class="grid-item-content">
                 <h1>Notifications</h1>
                 <p>Click to view</p>
                 <hr>
                 <span> Notification 1: Dad - Lorem Ipsum Dolor....</span>
                 <span> Notification 2: Mom - Lorem Ipsum Dolor....</span>
+            </div>
+        </div> -->
+        <div class="grid-item" id="spotify">
+            <div class="grid-item-content">
+                <!-- Spotify Current Playing status -->
+                <div id="spotify-title">Loading...</div>
+                <div id="spotify-artist">Loading...</div>
+                <div id="spotify-album">Loading...</div>
+                <div id="spotify-album-art"></div>
+                <div id="spotify-progress">
+                    <div id="spotify-progress-bar"></div>
+                </div>
+                <div id="spotify-controls">
+                    <button id="spotify-prev" class="spotify-control">􀊍</button>
+                    <button id="spotify-play" class="spotify-control">􁚞</button>
+                    <button id="spotify-next" class="spotify-control">􀊏</button>
+                </div>
             </div>
         </div>
         <div class="hass-grid" id="hass-grid"></div>

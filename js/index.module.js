@@ -112,11 +112,12 @@ window.init = async (list) => {
     });
 
     let firebaseConfig;
+    
     try {
         const response = await fetch('data.json');
         const data = await response.json();
         firebaseConfig = data.firebase;
-        console.log(firebaseConfig);
+        // console.log(firebaseConfig);
     } catch (error) {
         console.error('Error fetching Firebase config:', error);
         return;
@@ -124,7 +125,7 @@ window.init = async (list) => {
 
     const app = initializeApp(firebaseConfig);
 
-    const authfb = getAuthFB(app);
+    const authfb = getAuthFB();
     authfb.onAuthStateChanged((user) => {
         if (user) {
             console.log('User is authenticated:', user);
@@ -153,7 +154,7 @@ window.init = async (list) => {
                 console.error('Error listening for data changes:', error);
             });
         } else {
-            console.log('User is not authenticated');
+            // console.log('User is not authenticated');
         }
     }, (error) => {
         console.error('Error with auth state change:', error);

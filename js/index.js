@@ -801,7 +801,6 @@ async function fetchWeatherWAPI() {
                 document.getElementById("weather-icon").innerHTML = weatherIcon;
             }
         } else {
-            console.log("night")
             weather.style.backgroundImage = "linear-gradient(0deg, rgb(45, 50, 65), rgb(4, 12, 30))";
 
             weatherIcon = weatherIconMappingWAPI[data.current.condition.code];
@@ -830,3 +829,61 @@ function showNotif() {
 setInterval(() => {
     fetchWeatherData();
 }, 1000 * 60 * 10);
+
+spotifyExpiresAt = 0;
+spotifyToken = '';
+async function getSpotifyPlaybackState() {
+    let token;
+    try {
+        if (new Date().getTime() > spotifyExpiresAt) {
+            const response = await fetch('/data.json');
+            const data = await response.json();
+            id = data.spotify.id;
+            secret = data.spotify.secret;
+
+            const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `grant_type=client_credentials&client_id=${id}&client_secret=${secret}`
+            });
+            const tokenData = await tokenResponse.json();
+            expiresIn = tokenData.expires_in;
+            spotifyExpiresAt = new Date().getTime() + expiresIn * 1000;
+            spotifyToken = tokenData.access_token;
+            token = spotifyToken;
+        } else {
+            token = spotifyToken;
+        }
+
+        fetch('https://api.spotify.com/v1/me/player', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            const title = document.getElementById('spotify-title');
+            const artist = document.getElementById('spotify-artist');
+            const album = document.getElementById('spotify-album');
+            const albumArt = document.getElementById('spotify-album-art');
+            const progress = document.getElementById('spotify-progress-bar');
+            const controls = document.getElementById('spotify-controls');
+    
+            title.textContent = data.item.name;
+            artist.textContent = data.item.artists[0].name;
+            album.textContent = data.item.album.name;
+            albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
+            progress.style.width = `${data.progress_ms / data.item.duration_ms * 100}%`;  
+    
+            console.log(`Playing ${data.item.name} by ${data.item.artists[0].name} from ${data.item.album.name}`);
+        })
+        .catch(error => console.error('Error:', error));
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+getSpotifyPlaybackState()
