@@ -6,6 +6,7 @@ import {
 } from "https://cdn.jsdelivr.net/npm/home-assistant-js-websocket@latest/dist/index.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth as getAuthFB } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getDatabase, ref, onValue, get} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
 window.init = async (list) => {
@@ -111,32 +112,50 @@ window.init = async (list) => {
     });
 
     let firebaseConfig;
-    await fetch('data.json').then(response => response.json().then(data => firebaseConfig = data.firebase));
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    
-    const dbRef = ref(db, 'notifications/id/message');
-    
-    // data structure: 
-    // { randomid: { message: 'This is a message', read: true/false} }
-    // get data once
-    
-    get(dbRef).then((snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            console.log('Data:', data);
-        } else {
-            console.log('No data available');
-        }
-    });
+    try {
+        const response = await fetch('data.json');
+        const data = await response.json();
+        firebaseConfig = data.firebase;
+        console.log(firebaseConfig);
+    } catch (error) {
+        console.error('Error fetching Firebase config:', error);
+        return;
+    }
 
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            console.log('Data changed:', data);
+    const app = initializeApp(firebaseConfig);
+
+    const authfb = getAuthFB(app);
+    authfb.onAuthStateChanged((user) => {
+        if (user) {
+            console.log('User is authenticated:', user);
+            const db = getDatabase(app);
+            const dbRef = ref(db, 'notifications/id/message');
+            
+            get(dbRef).then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    console.log('Data:', data);
+                } else {
+                    console.log('No data available');
+                }
+            }).catch((error) => {
+                console.error('Error getting data:', error);
+            });
+
+            onValue(dbRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    console.log('Data changed:', data);
+                } else {
+                    console.log('No data available');
+                }
+            }, (error) => {
+                console.error('Error listening for data changes:', error);
+            });
         } else {
-            console.log('No data available');
+            console.log('User is not authenticated');
         }
+    }, (error) => {
+        console.error('Error with auth state change:', error);
     });
 };
