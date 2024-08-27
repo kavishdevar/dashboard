@@ -832,6 +832,7 @@ setInterval(() => {
 
 spotifyExpiresAt = 0;
 spotifyToken = '';
+
 async function getSpotifyPlaybackState() {
     let token;
     try {
@@ -840,13 +841,15 @@ async function getSpotifyPlaybackState() {
             const data = await response.json();
             id = data.spotify.id;
             secret = data.spotify.secret;
-
+            code = data.spotify.code;
             const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `grant_type=client_credentials&client_id=${id}&client_secret=${secret}`
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorizaiton': `Basic ${btoa(`${id}:${secret}`)}`,
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: `grant_type=authorization_code&code=${code}&redirect_uri=http://localhost:8080/callback`
             });
             const tokenData = await tokenResponse.json();
             expiresIn = tokenData.expires_in;
@@ -862,25 +865,25 @@ async function getSpotifyPlaybackState() {
                 'Authorization': `Bearer ${token}`
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            const title = document.getElementById('spotify-title');
-            const artist = document.getElementById('spotify-artist');
-            const album = document.getElementById('spotify-album');
-            const albumArt = document.getElementById('spotify-album-art');
-            const progress = document.getElementById('spotify-progress-bar');
-            const controls = document.getElementById('spotify-controls');
-    
-            title.textContent = data.item.name;
-            artist.textContent = data.item.artists[0].name;
-            album.textContent = data.item.album.name;
-            albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
-            progress.style.width = `${data.progress_ms / data.item.duration_ms * 100}%`;  
-    
-            console.log(`Playing ${data.item.name} by ${data.item.artists[0].name} from ${data.item.album.name}`);
-        })
-        .catch(error => console.error('Error:', error));
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                const title = document.getElementById('spotify-title');
+                const artist = document.getElementById('spotify-artist');
+                const album = document.getElementById('spotify-album');
+                const albumArt = document.getElementById('spotify-album-art');
+                const progress = document.getElementById('spotify-progress-bar');
+                const controls = document.getElementById('spotify-controls');
+
+                title.textContent = data.item.name;
+                artist.textContent = data.item.artists[0].name;
+                album.textContent = data.item.album.name;
+                albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
+                progress.style.width = `${data.progress_ms / data.item.duration_ms * 100}%`;
+
+                console.log(`Playing ${data.item.name} by ${data.item.artists[0].name} from ${data.item.album.name}`);
+            })
+            .catch(error => console.error('Error:', error));
     } catch (error) {
         console.error('Error:', error);
     }
