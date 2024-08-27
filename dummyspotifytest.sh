@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Fetch data.json
-response=$(curl -s /data.json)
+response=$(curl -s http://localhost:8080/data.json)
 
 # Extract id, secret, and code using jq
 id=$(echo "$response" | jq -r '.spotify.id')
@@ -15,7 +15,7 @@ auth=$(echo -n "$id:$secret" | base64)
 tokenResponse=$(curl -s -X POST 'https://accounts.spotify.com/api/token' \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -H "Authorization: Basic $auth" \
-  -d "grant_type=authorization_code&code=$code&redirect_uri=http://localhost:8080/callback")
+  -d "grant_type=authorization_code&code=$code&redirect_uri=http://localhost:8080")
 
 # Parse token response
 tokenData=$(echo "$tokenResponse" | jq '.')

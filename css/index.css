@@ -30,8 +30,8 @@
 
 html {
     height: 100dvh;
-    background-color: #000;
-    /* background-image: url('../imgs/background.png'); */
+    /* background-color: #000; */
+    background-image: url('../imgs/background.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -346,10 +346,8 @@ hr {
 }
 
 #spotify-progress {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 #spotify-progress-bar {

@@ -830,64 +830,108 @@ setInterval(() => {
     fetchWeatherData();
 }, 1000 * 60 * 10);
 
-spotifyExpiresAt = 0;
-spotifyToken = '';
-
+spotifyExpiresAt = 1727771714095;
+spotifyToken = 'BQBYtINI7uN25VJk6rgpTSZ2OpSVHahuC6N472zvYU5S8mNxJmpSggXeBtV-CZV4kZbkphSvfHlbWSvHTuj82YAWIjj7hrraIx6S9c8ZAz6OKhrqgvMvJHH9TEXJdCsUURLaMUtS9sS5juEuI4Pqfii-rW00SXn5BnHf5l4aketQO_L1i0AR9752UBQR9vjRU7GNOQ09iICv4U-_j6ZbkUHtAFwtNTya';
+var isPlaying = false;
 async function getSpotifyPlaybackState() {
     let token;
-    try {
-        if (new Date().getTime() > spotifyExpiresAt) {
-            const response = await fetch('/data.json');
-            const data = await response.json();
-            id = data.spotify.id;
-            secret = data.spotify.secret;
-            code = data.spotify.code;
 
-            // Request header field access-control-allow-origin is not allowed by Access-Control-Allow-Headers in preflight response.
-            const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorizaiton': `Basic ${btoa(`${id}:${secret}`)}`
-                },
-                body: `grant_type=authorization_code&code=${code}&redirect_uri=http://localhost:8080/callback`,
-            });
-            const tokenData = await tokenResponse.json();
-            expiresIn = tokenData.expires_in;
-            spotifyExpiresAt = new Date().getTime() + expiresIn * 1000;
-            spotifyToken = tokenData.access_token;
-            token = spotifyToken;
-        } else {
-            token = spotifyToken;
-        }
+    if (new Date().getTime() > spotifyExpiresAt) {
+        const response = await fetch('/data.json');
+        const data = await response.json();
+        id = data.spotify.id;
+        secret = data.spotify.secret;
+        refresh_token = data.spotify.refresh_token;
 
-        fetch('https://api.spotify.com/v1/me/player', {
+        const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Basic ${btoa(`${id}:${secret}`)}`,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type, access-control-allow-origin, Authorization'
+
+            },
+            body: `grant_type=refresh_token&refresh_token=${refresh_token}`
+        });
+
+        const tokenData = await tokenResponse.json();
+        expiresIn = tokenData.expires_in;
+        spotifyExpiresAt = new Date().getTime() + expiresIn * 1000;
+        spotifyToken = tokenData.access_token;
+        token = spotifyToken;
+    } else {
+        token = spotifyToken;
+    }
+
+    fetch('https://api.spotify.com/v1/me/player', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+        .then(response => response.json().catch(error => {
+            isPlaying = false;
+        }))
+        .then(data => {
+            const title = document.getElementById('spotify-title');
+            const artist = document.getElementById('spotify-artist');
+            const album = document.getElementById('spotify-album');
+            const albumArt = document.getElementById('spotify-album-art');
+            const progress = document.getElementById('spotify-progress-bar');
+
+            title.textContent = data.item.name;
+            artist.textContent = data.item.artists[0].name;
+            album.textContent = data.item.album.name;
+            albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
+            progress.style.width = `${data.progress_ms / data.item.duration_ms * 100}%`;
+            
+            isPlaying = true
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
-                const title = document.getElementById('spotify-title');
-                const artist = document.getElementById('spotify-artist');
-                const album = document.getElementById('spotify-album');
-                const albumArt = document.getElementById('spotify-album-art');
-                const progress = document.getElementById('spotify-progress-bar');
-                const controls = document.getElementById('spotify-controls');
+        .catch(error => console.error('Error:', error));
+}
 
-                title.textContent = data.item.name;
-                artist.textContent = data.item.artists[0].name;
-                album.textContent = data.item.album.name;
-                albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
-                progress.style.width = `${data.progress_ms / data.item.duration_ms * 100}%`;
-
-                console.log(`Playing ${data.item.name} by ${data.item.artists[0].name} from ${data.item.album.name}`);
-            })
-            .catch(error => console.error('Error:', error));
-    } catch (error) {
-        console.error('Error:', error);
+toggleSpotify = () => {
+    if (isPlaying) {
+        pauseSpotify();
+    } else {
+        playSpotify();
     }
 }
 
+pauseSpotify = () => {
+    fetch('https://api.spotify.com/v1/me/player/pause', {
+        method: 'PUT',
+        headers: {
+            "Authorization": `Bearer ${spotifyToken}`
+        }
+    })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
+
+    isPlaying = false;
+    document.getElementById('spotify-toggle').innerHTML = '􀊄';
+}
+
+playSpotify = () => {
+    fetch('https://api.spotify.com/v1/me/player/play', {
+        method: 'PUT',
+        headers: {
+            "Authorization": `Bearer ${spotifyToken}`
+        }
+    })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
+
+    isPlaying = true;
+    document.getElementById('spotify-toggle').innerHTML = '􀊃';
+}
+
+document.addEventListener('DOMContentLoaded', function () {document.getElementById('spotify-toggle').addEventListener('click', toggleSpotify)});
+
 getSpotifyPlaybackState()
+
+setInterval(() => {
+    getSpotifyPlaybackState();
+}, 1000);
