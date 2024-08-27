@@ -905,10 +905,6 @@ pauseSpotify = () => {
             "Authorization": `Bearer ${spotifyToken}`
         }
     })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
-
     isPlaying = false;
     document.getElementById('spotify-toggle').innerHTML = '􀊄';
 }
@@ -920,15 +916,33 @@ playSpotify = () => {
             "Authorization": `Bearer ${spotifyToken}`
         }
     })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
-
     isPlaying = true;
-    document.getElementById('spotify-toggle').innerHTML = '􀊃';
+    document.getElementById('spotify-toggle').innerHTML = '􀊆';
 }
 
-document.addEventListener('DOMContentLoaded', function () {document.getElementById('spotify-toggle').addEventListener('click', toggleSpotify)});
+previousSpotify = () => {
+    fetch('https://api.spotify.com/v1/me/player/previous', {
+        method: 'POST',
+        headers: {
+            "Authorization": `Bearer ${spotifyToken}`
+        }
+    })
+}
+
+nextSpotify = () => {
+    fetch('https://api.spotify.com/v1/me/player/next', {
+        method: 'POST',
+        headers: {
+            "Authorization": `Bearer ${spotifyToken}`
+        }
+    })
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('spotify-toggle').addEventListener('click', toggleSpotify)
+    document.getElementById('spotify-prev').addEventListener('click', () => previousSpotify())
+    document.getElementById('spotify-next').addEventListener('click', () => nextSpotify())
+});
 
 getSpotifyPlaybackState()
 
